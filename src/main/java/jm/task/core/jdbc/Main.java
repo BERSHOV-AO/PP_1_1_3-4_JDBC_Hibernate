@@ -1,7 +1,17 @@
 package jm.task.core.jdbc;
 
+import jm.task.core.jdbc.service.UserService;
+import jm.task.core.jdbc.service.UserServiceImpl;
+
 public class Main {
     public static void main(String[] args) {
-        // реализуйте алгоритм здесь
+
+        UserService userService = new UserServiceImpl();
+
+        userService.cleanUsersTable();
+        userService.saveUser("Bilbo", "Baggins", (byte) 25);
+        userService.saveUser("Samwise", "Gamgee", (byte) 29);
+        userService.saveUser("Peregrin", "Took", (byte) 31);
+        userService.saveUser("Meriadoc", "Brandybuck", (byte) 27);
     }
 }
