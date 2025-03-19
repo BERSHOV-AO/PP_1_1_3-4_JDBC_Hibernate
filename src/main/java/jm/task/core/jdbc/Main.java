@@ -9,6 +9,7 @@ public class Main {
         UserService userService = new UserServiceImpl();
 
         userService.createUsersTable();
+
         userService.saveUser("Bilbo", "Baggins", (byte) 25);
         userService.saveUser("Samwise", "Gamgee", (byte) 29);
         userService.saveUser("Peregrin", "Took", (byte) 31);
