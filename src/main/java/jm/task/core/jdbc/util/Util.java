@@ -1,61 +1,63 @@
 package jm.task.core.jdbc.util;
 
+import jm.task.core.jdbc.model.User;
+import org.hibernate.HibernateError;
 import org.hibernate.SessionFactory;
+
+import java.util.Properties;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 
 import org.hibernate.service.ServiceRegistry;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 public class Util {
 
-    private static final Logger logger = Logger.getLogger(Util.class.getName());
     private static final String URL = "jdbc:mysql://localhost:3306/my_db";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
 
     private static SessionFactory sessionFactory;
 
-    static {
-        try {
-            Configuration configuration = new Configuration();
+    public static SessionFactory HibernateGetConnection() {
+        if (sessionFactory == null) {
+            try {
+                Configuration configuration = new Configuration();
+                Properties settings = new Properties();
+                settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+                settings.put(Environment.URL, URL + "?useSSL=false");
+                settings.put(Environment.USER, USERNAME);
+                settings.put(Environment.PASS, PASSWORD);
+                settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+                settings.put(Environment.SHOW_SQL, "true");
 
-            configuration.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
-            configuration.setProperty("hibernate.connection.url", URL);
-            configuration.setProperty("hibernate.connection.username", USERNAME);
-            configuration.setProperty("hibernate.connection.password", PASSWORD);
-            configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
-            configuration.setProperty("hibernate.show_sql", "true");
+                settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 
-            configuration.addAnnotatedClass(jm.task.core.jdbc.model.User.class);
+                settings.put(Environment.HBM2DDL_AUTO, "create-drop");
 
-            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                    .applySettings(configuration.getProperties()).build();
-            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+                configuration.setProperties(settings);
 
+                configuration.addAnnotatedClass(User.class);
 
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error initializing SessionFactory", e);
+                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties()).build();
+
+                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+            } catch (HibernateError e) {
+                System.out.println("Error Hibernate connection");
+            }
         }
-    }
-
-    public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 
-    public static void shutdown() {
-        if (sessionFactory != null) {
-            sessionFactory.close();
-        }
+    public static void FactoryClose() {
+        sessionFactory.close();
     }
-
 
     public static Connection getConnectionJDBC() {
         try {
