@@ -8,16 +8,18 @@ import org.hibernate.Session;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UserDaoHibernateImpl implements UserDao {
-
-    private Transaction transaction;
+    private static final Logger logger = Logger.getLogger(UserDaoHibernateImpl.class.getName());
 
     public UserDaoHibernateImpl() {
     }
 
     @Override
     public void createUsersTable() {
+        Transaction transaction = null;
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
             String sql = """
@@ -28,7 +30,7 @@ public class UserDaoHibernateImpl implements UserDao {
                         age TINYINT);""";
             session.createSQLQuery(sql).executeUpdate();
             transaction.commit();
-            System.out.println("Таблица создана");
+            logger.log(Level.INFO, "Таблица создана");
         } catch (HibernateException e) {
             e.printStackTrace();
             if (transaction != null) {
@@ -39,11 +41,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
+        Transaction transaction = null;
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS Users;").executeUpdate();
             transaction.commit();
-            System.out.println("Таблица удалена");
+            logger.log(Level.INFO, "Ошибка при удалении таблицы users");
         } catch (HibernateException e) {
             e.printStackTrace();
             if (transaction != null) {
@@ -54,12 +57,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
+        Transaction transaction = null;
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
             User user = new User(name, lastName, age);
             session.save(user);
             transaction.commit();
-            System.out.println("User с именем –" + name + "  добавлен в базу данных");
+            logger.log(Level.INFO, "User с именем –" + name + "  добавлен в базу данных");
         } catch (HibernateException e) {
             e.printStackTrace();
             if (transaction != null) {
@@ -70,12 +74,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
+        Transaction transaction = null;
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
             User getUser = session.get(User.class, id);
             session.delete(getUser);
             transaction.commit();
-            System.out.println("User с id –" + id + "успешно удален");
+            logger.log(Level.INFO, "User с id –" + id + "успешно удален");
         } catch (HibernateException e) {
             e.printStackTrace();
             if (transaction != null) {
@@ -86,6 +91,7 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
+        Transaction transaction = null;
         List<User> usersList = new ArrayList<>();
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
@@ -102,11 +108,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
+        Transaction transaction = null;
         try (Session session = Util.HibernateGetConnection().openSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DELETE FROM Users").executeUpdate();
             transaction.commit();
-            System.out.println("Таблица очищена");
+            logger.log(Level.INFO, "Таблица очищена");
         } catch (HibernateException e) {
             e.printStackTrace();
             if (transaction != null) {
